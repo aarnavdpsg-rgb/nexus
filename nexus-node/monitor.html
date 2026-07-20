@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS NODE — live monitor</title>
+<meta name="description" content="Live subject profiling: device telemetry and real-time optical detection.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  .mon-head { margin-bottom: 2rem; }
+  .mon-head h1 { font-size: clamp(1.9rem, 4.2vw, 2.8rem); }
+  .mon-head p { color: var(--text-dim); max-width: 60ch; font-family: var(--font-mono); }
+
+  /* consent overlay */
+  #consent-screen {
+    position: fixed; inset: 0;
+    background: rgba(10,10,15,0.94);
+    z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    padding: 1.5rem;
+  }
+  #consent-screen.hidden { display: none; }
+  #consent-screen { backdrop-filter: blur(4px); }
+  .consent-box {
+    max-width: 480px;
+    width: 100%;
+    background: linear-gradient(180deg, rgba(20,20,28,0.97), rgba(20,20,28,0.9));
+    border: 1px solid var(--alert);
+    border-radius: 20px;
+    box-shadow: 0 0 0 1px rgba(255,107,53,0.08), 0 30px 90px -30px rgba(255,107,53,0.25);
+    padding: 2rem;
+    animation: consent-in 0.35s ease;
+  }
+  @keyframes consent-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @media (prefers-reduced-motion: reduce) { .consent-box { animation: none; } }
+  .consent-box p { color: var(--text-dim); font-size: 0.88rem; }
+  .consent-actions { display: flex; gap: 0.8rem; margin-top: 1.4rem; flex-wrap: wrap; }
+
+  .mon-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 1.5rem;
+  }
+  @media (max-width: 860px) { .mon-grid { grid-template-columns: 1fr; } }
+
+  .video-panel {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 18px;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    box-shadow: 0 20px 60px -25px rgba(34,211,238,0.2);
+  }
+  .video-panel::before,
+  .video-panel::after,
+  .video-panel .bracket-tl,
+  .video-panel .bracket-br {
+    content: '';
+    position: absolute;
+    width: 22px; height: 22px;
+    border: 2px solid var(--signal);
+    opacity: 0.7;
+    z-index: 3;
+    pointer-events: none;
+  }
+  .video-panel::before { top: 8px; left: 8px; border-right: none; border-bottom: none; }
+  .video-panel::after { bottom: 8px; right: 8px; border-left: none; border-top: none; }
+  .video-panel .bracket-tl { top: 8px; right: 8px; border-left: none; border-bottom: none; }
+  .video-panel .bracket-br { bottom: 8px; left: 8px; border-right: none; border-top: none; }
+  .scan-sweep {
+    position: absolute;
+    left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(34,211,238,0.8), transparent);
+    z-index: 2;
+    animation: sweep 3.2s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes sweep {
+    0% { top: 0%; opacity: 0; }
+    10% { opacity: 0.8; }
+    90% { opacity: 0.8; }
+    100% { top: 100%; opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { .scan-sweep { display: none; } }
+  .video-panel video {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+  }
+  .video-panel canvas.overlay {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    transform: scaleX(-1);
+  }
+  .video-panel .placeholder {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    text-align: center;
+    padding: 1.5rem;
+  }
+  .status-chip {
+    position: absolute; top: 0.7rem; left: 0.7rem;
+    background: rgba(10,10,15,0.7);
+    border: 1px solid var(--panel-line);
+    border-radius: 999px;
+    padding: 0.3rem 0.7rem;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    z-index: 2;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .status-chip .rec-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--signal);
+  }
+
+  /* ---------- primary emotion hero readout ---------- */
+  .emotion-hero {
+    text-align: center;
+    padding: 1.6rem 1rem 1.8rem;
+    margin: 1.5rem 0 2rem;
+  }
+  .emotion-hero .eyebrow { justify-content: center; display: flex; }
+  .emotion-hero h2 {
+    font-size: clamp(2rem, 6vw, 3.4rem);
+    margin: 0;
+    line-height: 1;
+  }
+  .emotion-hero .conf {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-top: 0.6rem;
+    letter-spacing: 0.06em;
+  }
+
+  .readout-list { display: flex; flex-direction: column; gap: 1rem; }
+  .readout-panel h3 { font-size: 0.8rem; letter-spacing: 0.05em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.8rem; }
+  .readout-row { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 0.4rem 0; border-bottom: 1px solid var(--panel-line); }
+  .readout-row:last-child { border-bottom: none; }
+  .readout-row .k { color: var(--text-dim); }
+  .readout-row .v { color: var(--signal); text-align: right; }
+
+  #trail-panel { position: relative; }
+  #trail-canvas { width: 100%; height: 140px; display: block; background: var(--void); border: 1px solid var(--panel-line); }
+
+  .detect-log {
+    margin-top: 1.5rem;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+  }
+  .detect-log .entry { color: var(--signal); }
+
+  .continue-wrap { margin-top: 2rem; text-align: right; }
+</style>
+</head>
+<body>
+
+<canvas id="ambient-bg"></canvas>
+<div class="wave-strip"><canvas id="nexus-wave" data-state="signal"></canvas></div>
+<nav class="nexus-nav" aria-label="Primary">
+  <a href="index.html" class="brand"><span class="dot"></span>NEXUS NODE</a>
+  <button class="nav-toggle" aria-expanded="false" aria-label="Toggle navigation">MENU</button>
+  <ul>
+    <li><a class="nav-link" href="index.html">Boot</a></li>
+    <li><a class="nav-link" href="about.html">Overview</a></li>
+    <li><a class="nav-link" href="monitor.html" aria-current="page">Monitor</a></li>
+    <li><a class="nav-link" href="awakening.html">Awakening</a></li>
+  </ul>
+</nav>
+
+<div id="consent-screen">
+  <div class="consent-box">
+    <p class="eyebrow alert">consent required</p>
+    <h2>Grant the Nexus optical access?</h2>
+    <p>The network will use your camera to detect objects, people, and expression in the current frame. Nothing is recorded or transmitted. The feed stays on this device and ends when you leave this page.</p>
+    <p>Decline and the system continues on device and browser data alone.</p>
+    <div class="consent-actions">
+      <button id="consent-allow">Allow</button>
+      <button id="consent-decline" class="alert-btn">Decline</button>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="mon-head">
+    <p class="eyebrow">002 — MONITOR.LIVE</p>
+    <h1>Subject profiling</h1>
+    <p>Everything below is read from this session, this device, this moment. Nothing here is simulated.</p>
+  </div>
+
+  <div class="emotion-hero panel">
+    <p class="eyebrow">live read</p>
+    <h2 id="hero-emotion" class="grad-text">AWAITING FACE</h2>
+    <p class="conf" id="hero-conf">Grant optical access below to begin expression detection.</p>
+  </div>
+
+  <div class="mon-grid">
+    <div>
+      <div class="video-panel">
+        <span class="bracket-tl"></span><span class="bracket-br"></span>
+        <div class="scan-sweep" id="scan-sweep" hidden></div>
+        <div class="status-chip"><span class="rec-dot glow-pulse"></span><span id="status-text">AWAITING CONSENT</span></div>
+        <div class="placeholder" id="video-placeholder">Optical input is off. Grant access to enable object and expression detection, or continue with device telemetry only.</div>
+        <video id="webcam" autoplay muted playsinline hidden></video>
+        <canvas class="overlay" id="overlay-canvas" hidden></canvas>
+      </div>
+
+      <div class="detect-log panel" id="detect-log">
+        <span class="entry">&gt; SUBJECT DETECTED — awaiting optical input.</span>
+      </div>
+    </div>
+
+    <div class="readout-list">
+      <div class="readout-panel panel">
+        <h3>Live affect</h3>
+        <div id="affect-bars">
+          <p class="spec-note" id="affect-empty" style="margin:0;color:var(--text-dim);font-size:0.8rem;">No face in frame yet.</p>
+        </div>
+      </div>
+
+      <div class="readout-panel panel">
+        <h3>Session</h3>
+        <div class="readout-row"><span class="k">Duration</span><span class="v" id="r-duration">00:00:00</span></div>
+        <div class="readout-row"><span class="k">Page loaded</span><span class="v" id="r-loadtime">—</span></div>
+      </div>
+
+      <div class="readout-panel panel">
+        <h3>Device</h3>
+        <div class="readout-row"><span class="k">Screen</span><span class="v" id="r-screen">—</span></div>
+        <div class="readout-row"><span class="k">Viewport</span><span class="v" id="r-viewport">—</span></div>
+        <div class="readout-row"><span class="k">Pixel ratio</span><span class="v" id="r-dpr">—</span></div>
+        <div class="readout-row"><span class="k">Platform</span><span class="v" id="r-platform">—</span></div>
+        <div class="readout-row"><span class="k">Cores (reported)</span><span class="v" id="r-cores">—</span></div>
+        <div class="readout-row"><span class="k">Battery</span><span class="v" id="r-battery">unsupported</span></div>
+      </div>
+
+      <div class="readout-panel panel">
+        <h3>Network</h3>
+        <div class="readout-row"><span class="k">Status</span><span class="v" id="r-online">—</span></div>
+        <div class="readout-row"><span class="k">Connection type</span><span class="v" id="r-conn">unsupported</span></div>
+      </div>
+
+      <div class="readout-panel panel" id="trail-panel">
+        <h3>Mouse path</h3>
+        <canvas id="trail-canvas"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="continue-wrap">
+    <a href="awakening.html" class="btn" id="continue-link">Continue to Awakening</a>
+  </div>
+</main>
+
+<footer class="sys-footer">NEXUS NODE — ALL READINGS LOCAL TO THIS BROWSER SESSION</footer>
+
+<script src="js/ambient.js"></script>
+<script src="js/waveform.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script src="js/monitor.js"></script>
+</body>
+</html>

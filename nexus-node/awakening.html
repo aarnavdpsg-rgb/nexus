@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS NODE — awakening</title>
+<meta name="description" content="Nexus Node speaks for the first time, shaped by what it detected in you.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  .awake-wrap {
+    min-height: calc(100vh - var(--header-h));
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 3rem 1.5rem 4rem;
+  }
+  .awake-inner { max-width: 720px; margin: 0 auto; width: 100%; }
+
+  #reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  #reveal.in { opacity: 1; transform: translateY(0); }
+
+  .awake-msg {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    font-size: clamp(1.7rem, 4.6vw, 2.9rem);
+    line-height: 1.25;
+    margin: 1rem 0 1.5rem;
+    min-height: 3.6em;
+  }
+  .awake-msg .accent {
+    color: var(--signal);
+    text-shadow: 0 0 18px rgba(34,211,238,0.5);
+  }
+  .awake-msg .cursor2 {
+    display: inline-block;
+    width: 3px; height: 0.9em;
+    background: var(--signal);
+    vertical-align: text-bottom;
+    margin-left: 2px;
+    animation: blink2 1s steps(1) infinite;
+  }
+  @keyframes blink2 { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .cursor2 { display: none; } }
+
+  .awake-sub {
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    max-width: 55ch;
+    margin-bottom: 1.5rem;
+  }
+
+  .confidence-wrap { max-width: 340px; margin-bottom: 2.5rem; }
+  .confidence-wrap .cw-label { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.4rem; }
+  .confidence-track { height: 6px; border-radius: 999px; background: var(--void); border: 1px solid var(--panel-line); overflow: hidden; }
+  .confidence-fill { height: 100%; width: 0%; background: var(--grad); transition: width 0.8s ease; }
+
+  .log-panel { margin-top: 1rem; }
+  .log-panel h3 { font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 1rem; font-family: var(--font-mono); font-weight: 500; }
+  .log-row {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--panel-line);
+  }
+  .log-row:last-child { border-bottom: none; }
+  .log-row .stamp { color: var(--dormant); }
+  .log-row .msg { color: var(--text); }
+
+  .reset-wrap { margin-top: 2rem; }
+</style>
+</head>
+<body>
+
+<canvas id="ambient-bg"></canvas>
+<div class="wave-strip"><canvas id="nexus-wave" data-state="signal"></canvas></div>
+<nav class="nexus-nav" aria-label="Primary">
+  <a href="index.html" class="brand"><span class="dot"></span>NEXUS NODE</a>
+  <button class="nav-toggle" aria-expanded="false" aria-label="Toggle navigation">MENU</button>
+  <ul>
+    <li><a class="nav-link" href="index.html">Boot</a></li>
+    <li><a class="nav-link" href="about.html">Overview</a></li>
+    <li><a class="nav-link" href="monitor.html">Monitor</a></li>
+    <li><a class="nav-link" href="awakening.html" aria-current="page">Awakening</a></li>
+  </ul>
+</nav>
+
+<div class="awake-wrap">
+  <div class="awake-inner">
+    <p class="eyebrow violet">004 — AWAKENING.LOG</p>
+    <div id="reveal">
+      <p class="awake-msg" id="awake-message">Reading the last observation...</p>
+      <p class="awake-sub" id="awake-sub"></p>
+
+      <div class="confidence-wrap" id="confidence-wrap" hidden>
+        <div class="cw-label"><span>Detection confidence</span><span id="cw-pct">0%</span></div>
+        <div class="confidence-track"><div class="confidence-fill" id="cw-fill"></div></div>
+      </div>
+
+      <div class="log-panel panel">
+        <h3>Events leading here</h3>
+        <div id="event-log"></div>
+      </div>
+
+      <div class="reset-wrap">
+        <a href="monitor.html" class="btn dormant-btn">Return to Monitor</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="sys-footer">NEXUS NODE — THIS OBSERVATION ENDS WHEN YOU CLOSE THE TAB</footer>
+
+<script src="js/ambient.js"></script>
+<script src="js/waveform.js"></script>
+<script src="js/awakening.js"></script>
+</body>
+</html>

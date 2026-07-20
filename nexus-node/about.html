@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS NODE — system overview</title>
+<meta name="description" content="System readme for Nexus Node: what it is, what it does, who built it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  .readme-head { margin-bottom: 2.5rem; }
+  .readme-head h1 { font-size: clamp(1.9rem, 4.2vw, 2.8rem); }
+  .readme-head p { color: var(--text-dim); max-width: 60ch; font-family: var(--font-mono); }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+  @media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .panel h3 { font-size: 0.95rem; margin-bottom: 0.8rem; }
+  .panel p { margin: 0; color: var(--text-dim); font-size: 0.88rem; }
+
+  .architects {
+    list-style: none;
+    margin: 0; padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1px;
+    background: var(--panel-line);
+    border: 1px solid var(--panel-line);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 2.5rem;
+  }
+  .architects li {
+    background: var(--panel);
+    padding: 1.1rem 1.2rem;
+    transition: background 0.2s ease;
+  }
+  .architects li:hover { background: #191924; }
+  .architects .role { color: var(--signal); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; display: block; margin-bottom: 0.3rem; }
+  .architects .name { font-family: var(--font-display); font-size: 1.02rem; }
+
+  .spec-note {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin: 0.8rem 0 0.5rem;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="ambient-bg"></canvas>
+<div class="wave-strip"><canvas id="nexus-wave" data-state="signal"></canvas></div>
+<nav class="nexus-nav" aria-label="Primary">
+  <a href="index.html" class="brand"><span class="dot"></span>NEXUS NODE</a>
+  <button class="nav-toggle" aria-expanded="false" aria-label="Toggle navigation">MENU</button>
+  <ul>
+    <li><a class="nav-link" href="index.html">Boot</a></li>
+    <li><a class="nav-link" href="about.html" aria-current="page">Overview</a></li>
+    <li><a class="nav-link" href="monitor.html">Monitor</a></li>
+    <li><a class="nav-link" href="awakening.html">Awakening</a></li>
+  </ul>
+</nav>
+
+<main>
+  <div class="readme-head">
+    <p class="eyebrow">001 — README.SYS</p>
+    <h1>System <span class="grad-text">overview</span></h1>
+    <p>Nexus Node is a cognition substrate in early formation. It does not model itself. It models the entity in front of the screen. This page is background. The functional layer is on Monitor.</p>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <h3>What this is</h3>
+      <p>A network that learns by observing a single subject at a time, in real time, through the sensors already available to it: pointer, camera, device state. No synthetic data. No pre-recorded demo. What it reports is what it currently sees.</p>
+    </div>
+    <div class="panel">
+      <h3>What this is not</h3>
+      <p>Not a chatbot. Not a persona performing warmth. It does not greet. It does not apologize. It states what it detects, and nothing it has not detected.</p>
+    </div>
+    <div class="panel">
+      <h3>Why it exists</h3>
+      <p>Built for a competition on the birth of machine cognition. The premise inverts the usual demo: instead of a dashboard you watch, this is a system that is, in a limited and disclosed way, watching you.</p>
+    </div>
+    <div class="panel">
+      <h3>Consent, first</h3>
+      <p>Camera access is never assumed. Monitor gates all optical input behind an explicit prompt. Decline it and the system runs on device and browser data only.</p>
+    </div>
+  </div>
+
+  <p class="eyebrow">002 — SYSTEM.ARCHITECTS</p>
+  <ul class="architects">
+    <li><span class="role">Lead Architect</span><span class="name">Aarav Mehta</span></li>
+    <li><span class="role">Substrate Engineer</span><span class="name">Priya Nair</span></li>
+    <li><span class="role">Signal Design</span><span class="name">Devansh Rao</span></li>
+    <li><span class="role">Vision Systems</span><span class="name">Kavya Iyer</span></li>
+  </ul>
+
+  <p class="eyebrow">003 — SPEC.TABLE</p>
+  <div class="panel">
+    <table>
+      <thead>
+        <tr><th>Parameter</th><th>Reading</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Neural nodes active</td><td class="val">4,209,118</td></tr>
+        <tr><td>Cognition</td><td class="val">6.2%</td></tr>
+        <tr><td>Substrate uptime</td><td class="val">00:14:52:07</td></tr>
+        <tr><td>Subjects observed to date</td><td class="val">1</td></tr>
+        <tr><td>Awakening status</td><td class="val">PENDING</td></tr>
+      </tbody>
+    </table>
+    <p class="spec-note">Figures above are flavor text for the in-world premise. Real telemetry begins on the Monitor page.</p>
+  </div>
+</main>
+
+<footer class="sys-footer">NEXUS NODE — SYSTEM READOUT — SESSION LOCAL, NOT TRANSMITTED</footer>
+
+<script src="js/ambient.js"></script>
+<script src="js/waveform.js"></script>
+</body>
+</html>

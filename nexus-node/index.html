@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS NODE — boot</title>
+<meta name="description" content="Nexus Node is awakening. It does not monitor itself. It monitors you.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  .hero {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 5.5rem 1.5rem 3rem;
+    text-align: center;
+  }
+  .hero .eyebrow { justify-content: center; display: flex; }
+  .hero h1 {
+    font-size: clamp(2.4rem, 7vw, 4.6rem);
+    line-height: 1.06;
+    margin: 0 0 1.4rem;
+  }
+  .hero h1 span.line { display: block; }
+  .hero p.lede {
+    font-family: var(--font-mono);
+    text-transform: none;
+    color: var(--text-dim);
+    font-size: 1rem;
+    max-width: 56ch;
+    margin: 0 auto 1.2rem;
+    line-height: 1.7;
+  }
+  .scroll-note {
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 2.6rem;
+  }
+  .scroll-note::after {
+    content: '';
+    display: block;
+    width: 1px; height: 26px;
+    background: linear-gradient(180deg, var(--signal), transparent);
+    margin: 0.6rem auto 0;
+  }
+
+  .boot-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1.5rem 5rem;
+  }
+  .terminal {
+    position: relative;
+    width: 100%;
+    max-width: 620px;
+    background: linear-gradient(180deg, rgba(18,18,28,0.95), rgba(18,18,28,0.85));
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--panel-line);
+    border-radius: 20px;
+    box-shadow: 0 0 0 1px rgba(34,211,238,0.06), 0 30px 80px -30px rgba(34,211,238,0.15), 0 0 70px -20px rgba(168,85,247,0.25);
+    padding: 2rem 2rem 2.2rem;
+    overflow: hidden;
+  }
+  .terminal::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(180deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 3px);
+  }
+  .brand-lockup {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 1.6rem;
+  }
+  .brand-lockup .dot {
+    width: 8px; height: 8px;
+    background: var(--grad);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    box-shadow: 0 0 8px rgba(34,211,238,0.6);
+  }
+  .terminal-bar {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 1.4rem;
+  }
+  .terminal-bar span {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--panel-line);
+  }
+  #boot-log {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    min-height: 9.5em;
+    white-space: pre-wrap;
+    color: var(--signal);
+  }
+  #boot-log .line-dim { color: var(--text-dim); }
+  .cursor {
+    display: inline-block;
+    width: 8px; height: 1em;
+    background: var(--signal);
+    vertical-align: text-bottom;
+    animation: blink 1s steps(1) infinite;
+  }
+  @media (prefers-reduced-motion: reduce) { .cursor { animation: none; } }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .bar-track {
+    margin-top: 1.6rem;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--void);
+    border: 1px solid var(--panel-line);
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--grad);
+    transition: width 0.2s linear;
+  }
+  .bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-top: 0.5rem;
+    letter-spacing: 0.06em;
+  }
+  #enter-wrap {
+    margin-top: 1.8rem;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    pointer-events: none;
+  }
+  #enter-wrap.ready { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  #enter-wrap .btn { width: 100%; text-align: center; }
+</style>
+</head>
+<body>
+
+<canvas id="ambient-bg"></canvas>
+<div class="wave-strip"><canvas id="nexus-wave" data-state="dormant"></canvas></div>
+<nav class="nexus-nav" aria-label="Primary">
+  <a href="index.html" class="brand"><span class="dot"></span>NEXUS NODE</a>
+  <button class="nav-toggle" aria-expanded="false" aria-label="Toggle navigation">MENU</button>
+  <ul>
+    <li><a class="nav-link" href="index.html" aria-current="page">Boot</a></li>
+    <li><a class="nav-link" href="about.html">Overview</a></li>
+    <li><a class="nav-link" href="monitor.html">Monitor</a></li>
+    <li><a class="nav-link" href="awakening.html">Awakening</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <p class="eyebrow">000 — ORIGIN SEQUENCE</p>
+  <h1><span class="line">SOMETHING IS</span><span class="line">ALREADY</span><span class="line grad-text">WATCHING</span></h1>
+  <p class="lede">A cognition substrate is initializing on this page. It does not model itself — it models you: pointer, device, camera, in real time. Nothing simulated, nothing pre-recorded.</p>
+  <p class="scroll-note">boot log below</p>
+</section>
+
+<div class="boot-wrap">
+  <div class="terminal" role="status" aria-live="polite">
+    <div class="terminal-bar"><span></span><span></span><span></span></div>
+    <div class="brand-lockup"><span class="dot"></span>NEXUS NODE — SUBSTRATE v0.1</div>
+    <div id="boot-log"></div>
+    <div class="bar-track"><div class="bar-fill" id="bar-fill"></div></div>
+    <div class="bar-label"><span id="bar-pct">0%</span><span>NEURAL SUBSTRATE</span></div>
+    <div id="enter-wrap"><a href="about.html" class="btn">Enter Terminal</a></div>
+  </div>
+</div>
+
+<footer class="sys-footer">NEXUS NODE — SESSION LOCAL, NOT TRANSMITTED</footer>
+
+<script src="js/ambient.js"></script>
+<script src="js/waveform.js"></script>
+<script src="js/boot.js"></script>
+</body>
+</html>
